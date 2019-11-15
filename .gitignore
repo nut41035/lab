@@ -4,6 +4,7 @@ model/
 logs/
 __pycache__/
 util/__pycache__/
+result/
 
 # fiels
 checkpoint
