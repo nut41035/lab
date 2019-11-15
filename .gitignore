@@ -1,5 +1,12 @@
 # Don't track content of these folders
 data/
+model/
+logs/
+__pycache__/
+util/__pycache__/
+
+# fiels
+checkpoint
 
 # Compiled source #
 ###################
