@@ -11,13 +11,13 @@ import matplotlib.image as mpimg
 
 from data import *
 
-def test(BASE_DIR, MODEL_VERSION):
+def test(BASE_DIR, MODEL):
     # 0 = all messages are logged (default behavior)
     # 1 = INFO messages are not printed
     # 2 = INFO and WARNING messages are not printed
     # 3 = INFO, WARNING, and ERROR messages are not printed
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-    print("#### Start program")
+    print("#### Start testing")
 
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     if not os.path.exists('%sresult'%BASE_DIR):
@@ -30,17 +30,13 @@ def test(BASE_DIR, MODEL_VERSION):
     TEST_DIR_PATH = BASE_DIR + 'test/images/'
     files = glob.glob('%s/*'%TEST_DIR_PATH)
 
-    model = keras.models.load_model('model/%s.h5'%MODEL_VERSION)
-    print('#### Model loaded')
-    model.summary()
-
     for path in files:
         imgName = os.path.basename(path)[0:-4]
         print(imgName)
         image = cv.imread(path, 1)
         image = np.array([image/255.0])
 
-        predictions = model.predict(image)
+        predictions = MODEL.predict(image)
         predictions = np.squeeze(predictions)
 
         imwrite('%s/result/predicted/%s.png'%(BASE_DIR, imgName), predictions)
@@ -52,6 +48,7 @@ def test(BASE_DIR, MODEL_VERSION):
         a.set_title('Original')
 
         a = fig.add_subplot(1, 3, 2)
+        predictions = cv.imread('%s/result/predicted/%s.png'%(BASE_DIR, imgName), 1)
         imgplot = plt.imshow(predictions)
         a.set_title('Predictions')
 
@@ -63,7 +60,7 @@ def test(BASE_DIR, MODEL_VERSION):
 
         plt.savefig('%sresult/combined/%s.png'%(BASE_DIR, imgName))
 
-def whole_body_test(image_path, image_name, MODEL_VERSION, h = 64, w = 64):
+def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     # 0 = all messages are logged (default behavior)
     # 1 = INFO messages are not printed
     # 2 = INFO and WARNING messages are not printed
@@ -74,9 +71,6 @@ def whole_body_test(image_path, image_name, MODEL_VERSION, h = 64, w = 64):
     print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
     if not os.path.exists('./result'):
         os.makedirs('./result')
-
-    model = keras.models.load_model('model/%s.h5'%MODEL_VERSION)
-    print('#### Model loaded')
 
     print(image_name)
     path = image_path + 'images/' + image_name + '.jpg'
@@ -93,7 +87,7 @@ def whole_body_test(image_path, image_name, MODEL_VERSION, h = 64, w = 64):
         for j in range(vloop):
             crop_img = image[h*j:h*(j+1), w*i:w*(i+1)]
             crop_img = np.array([crop_img/255.0])
-            predictions = model.predict(crop_img)
+            predictions = MODEL.predict(crop_img)
             predictions = np.squeeze(predictions)
 
             result[h*j:h*(j+1), w*i:w*(i+1)] = predictions
