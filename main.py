@@ -8,6 +8,7 @@ import cv2 as cv
 
 from model import *
 from data import *
+from predict import *
 import datetime
 
 
@@ -21,20 +22,21 @@ print("#### Start program")
 print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
 ## program parameter
-TRAIN_DIR_PATH = './data/processed/only_cancers/train'
-TEST_DIR_PATH = './data/processed/only_cancers/test/'
+BASE_DIR = './data/processed/only_cancers/'
+TRAIN_DIR_PATH = BASE_DIR + 'train/'
+VALIDATION_DIR_PATH = BASE_DIR + 'validation/'
 seed = 1
 
 ## training parameter
-EPOCHS = 10
+EPOCHS = 20
 BS = 15
-IMAGE_COUNT = 5460
-VALIDATION_COUNT = 4550
+IMAGE_COUNT = 528
+VALIDATION_COUNT = 63
 
 training_data = DataGenerator(TRAIN_DIR_PATH, batch_size=BS, image_size=64)
 print('#### Successfully obtain TRAINGIN images and masks %d'%(training_data.__len__()))
-testing_data = DataGenerator(TEST_DIR_PATH, batch_size=BS, image_size=64)
-print('#### Successfully obtain TESTING images and masks %d'%(testing_data.__len__()))
+validating_data = DataGenerator(VALIDATION_DIR_PATH, batch_size=BS, image_size=64)
+print('#### Successfully obtain VALIDATING images and masks %d'%(validating_data.__len__()))
 
 model = unet()
 print('#### Model loaded')
@@ -47,7 +49,10 @@ file_writer = tf.summary.create_file_writer(log_dir)
 
 model.fit(training_data, 
                 epochs=EPOCHS,
-                validation_data=testing_data,
+                validation_data=validating_data,
                 callbacks=[tensorboard_callback])
 
-model.save_weights("model/UNet_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+time_stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+model.save("model/UNet_%s.h5" %time_stamp)
+
+test(BASE_DIR = BASE_DIR,MODEL_VERSION = 'UNet_%s'%time_stamp)
