@@ -1,7 +1,7 @@
 import tensorflow as tf
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
+# from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-import numpy as np
+# import numpy as np
 import os
 import cv2 as cv
 # import matplotlib.pyplot as plt
@@ -16,14 +16,9 @@ import datetime
 # 2 = INFO and WARNING messages are not printed
 # 3 = INFO, WARNING, and ERROR messages are not printed
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-
-
-def combine_generator(gen1, gen2):
-    while True:
-        yield(next(gen1), next(gen2))
 
 print("#### Start program")
+print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
 
 ## program parameter
 TRAIN_DIR_PATH = './data/processed/only_cancers/train'
