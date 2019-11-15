@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import numpy as np
 import os
 import cv2 as cv
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 
 from model import *
 from data import *
@@ -26,8 +26,8 @@ def combine_generator(gen1, gen2):
 print("#### Start program")
 
 ## program parameter
-TRAIN_DIR_PATH = './data/train/'
-TEST_DIR_PATH = './data/test/'
+TRAIN_DIR_PATH = './data/processed/only_cancers/train'
+TEST_DIR_PATH = './data/processed/only_cancers/test/'
 seed = 1
 
 ## training parameter
@@ -47,6 +47,7 @@ print('#### Model loaded')
 
 log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
+file_writer = tf.summary.create_file_writer(log_dir)
 # model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
 
 model.fit(training_data, 
@@ -54,4 +55,4 @@ model.fit(training_data,
                 validation_data=testing_data,
                 callbacks=[tensorboard_callback])
 
-model.save_weights("UNet_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
+model.save_weights("model/UNet_" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S"))
