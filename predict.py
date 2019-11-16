@@ -59,6 +59,8 @@ def test(BASE_DIR, MODEL):
         a.set_title('Mask')
 
         plt.savefig('%sresult/combined/%s.png'%(BASE_DIR, imgName))
+    print('#### FINISHED testing')
+    print('check  %sresult/   folder'%BASE_DIR)
 
 def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     # 0 = all messages are logged (default behavior)
@@ -105,8 +107,8 @@ def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
 
     a = fig.add_subplot(1, 3, 3)
     imgplot = plt.imshow(mask)
-    print(mask.shape)
     a.set_title('Mask')
 
-   
     plt.savefig('./result/%s_combined.png'%image_name)
+    print('#### FINISHED testing')
+    print('check  ./result/  folder')

@@ -55,4 +55,4 @@ model.fit(training_data,
 time_stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 model.save("model/UNet_%s.h5" %time_stamp)
 
-test(BASE_DIR = BASE_DIR,MODEL_VERSION = 'UNet_%s'%time_stamp)
+test(BASE_DIR = BASE_DIR, MODEL = model)
