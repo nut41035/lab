@@ -38,7 +38,7 @@ def test(BASE_DIR, MODEL):
 
         predictions = MODEL.predict(image)
         predictions = np.squeeze(predictions)
-
+        predictions = np.where(predictions < 0.7, 0, 1)
         imwrite('%s/result/predicted/%s.png'%(BASE_DIR, imgName), predictions)
 
         fig = plt.figure()
@@ -54,11 +54,13 @@ def test(BASE_DIR, MODEL):
 
         a = fig.add_subplot(1, 3, 3)
         print('%smasks/%s.png'%(BASE_DIR, imgName))
-        img =  cv.imread('%stest/masks/%s.png'%(BASE_DIR, imgName), 1)
+        img = np.load('%stest/masks/%s.npy'%(BASE_DIR, imgName))
+        img = np.where( img > 0, 255, 0)
         imgplot = plt.imshow(img)
         a.set_title('Mask')
 
         plt.savefig('%sresult/combined/%s.png'%(BASE_DIR, imgName))
+        plt.close()
     print('#### FINISHED testing')
     print('check  %sresult/   folder'%BASE_DIR)
 
@@ -80,19 +82,21 @@ def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     mask_path = image_path + 'masks/' + image_name + '.jpg'
     mask = cv.imread(mask_path, 1)
 
-    height = image.shape[0]
-    width = image.shape[1] 
-    hloop = int(math.floor(width/w)) #Horizontal loop
-    vloop = int(math.floor(height/h)) #Vertical loop
+    img = cv.resize(image,(1024,1024))
+    height = 1024
+    width = 1024
+    hloop = int(math.ceil(width/w)) #Horizontal loop
+    vloop = int(math.ceil(height/h)) #Vertical loop
     result = np.array([[0.0 for x in range(width)] for y in range(height)])
     for i in range(hloop):
         for j in range(vloop):
-            crop_img = image[h*j:h*(j+1), w*i:w*(i+1)]
+            crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
             crop_img = np.array([crop_img/255.0])
             predictions = MODEL.predict(crop_img)
             predictions = np.squeeze(predictions)
-
+            predictions = np.where(predictions < 0.7, 0, 1)
             result[h*j:h*(j+1), w*i:w*(i+1)] = predictions
+    result = cv.resize(result,(480,865))
     imwrite('./result/%s_predicted.png'%image_name, result)
               
     fig = plt.figure()
@@ -110,5 +114,6 @@ def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     a.set_title('Mask')
 
     plt.savefig('./result/%s_combined.png'%image_name)
+    plt.close()
     print('#### FINISHED testing')
     print('check  ./result/  folder')
