@@ -11,15 +11,44 @@ import matplotlib.image as mpimg
 
 from data import *
 
-def test(BASE_DIR, MODEL):
+"""
+    1. predict_img
+    2. predict_path
+    3. predict_folder
+    4. predict_whole_body
+"""
+
+def predict_img(MODEL, img):
     # 0 = all messages are logged (default behavior)
     # 1 = INFO messages are not printed
     # 2 = INFO and WARNING messages are not printed
     # 3 = INFO, WARNING, and ERROR messages are not printed
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-    print("#### Start testing")
+    image = np.array([img/255.0])
 
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+    prediction = MODEL.predict(image)
+    prediction = np.squeeze(prediction)
+    prediction = np.where(prediction < 0.7, 0, 1)
+
+    return prediction
+
+def predict_path(MODEL, BASE_DIR, imgName):
+    # 0 = all messages are logged (default behavior)
+    # 1 = INFO messages are not printed
+    # 2 = INFO and WARNING messages are not printed
+    # 3 = INFO, WARNING, and ERROR messages are not printed
+    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+    imagePath = BASE_DIR + 'images/' + imgName + '.jpg'
+    image = cv.imread(imagePath, 1)
+    prediction = predict_img(MODEL, image)
+    
+    maskPath = BASE_DIR + 'masks/' + imgName + '.npy'
+    mask = np.load(maskPath)
+    print("Generated prediction of %s"%imgName)
+
+    return image, mask, prediction
+
+def predict_folder(MODEL, BASE_DIR):
     if not os.path.exists('%sresult'%BASE_DIR):
         os.makedirs('%sresult'%BASE_DIR)
     if not os.path.exists('%sresult/predicted'%BASE_DIR):
@@ -27,36 +56,26 @@ def test(BASE_DIR, MODEL):
     if not os.path.exists('%sresult/combined'%BASE_DIR):
         os.makedirs('%sresult/combined'%BASE_DIR)
 
-    TEST_DIR_PATH = BASE_DIR + 'test/images/'
-    files = glob.glob('%s/*'%TEST_DIR_PATH)
+    TEST_DIR_PATH = BASE_DIR + 'test/'
+    files = glob.glob('%s/images/*'%TEST_DIR_PATH)
 
     for path in files:
         imgName = os.path.basename(path)[0:-4]
         print(imgName)
-        image = cv.imread(path, 1)
-        image = np.array([image/255.0])
-
-        predictions = MODEL.predict(image)
-        predictions = np.squeeze(predictions)
-        predictions = np.where(predictions < 0.7, 0, 1)
-        imwrite('%s/result/predicted/%s.png'%(BASE_DIR, imgName), predictions)
+        image, mask, prediction = predict_path(MODEL, TEST_DIR_PATH, imgName)
+        imwrite('%s/result/predicted/%s.png'%(BASE_DIR, imgName), prediction)
 
         fig = plt.figure()
         a = fig.add_subplot(1, 3, 1)
-        img =  cv.imread(path, 1)
-        imgplot = plt.imshow(img)
+        imgplot = plt.imshow(image)
         a.set_title('Original')
 
         a = fig.add_subplot(1, 3, 2)
-        predictions = cv.imread('%s/result/predicted/%s.png'%(BASE_DIR, imgName), 1)
-        imgplot = plt.imshow(predictions)
+        imgplot = plt.imshow(prediction)
         a.set_title('Predictions')
 
         a = fig.add_subplot(1, 3, 3)
-        print('%smasks/%s.png'%(BASE_DIR, imgName))
-        img = np.load('%stest/masks/%s.npy'%(BASE_DIR, imgName))
-        img = np.where( img > 0, 255, 0)
-        imgplot = plt.imshow(img)
+        imgplot = plt.imshow(mask)
         a.set_title('Mask')
 
         plt.savefig('%sresult/combined/%s.png'%(BASE_DIR, imgName))
@@ -64,19 +83,10 @@ def test(BASE_DIR, MODEL):
     print('#### FINISHED testing')
     print('check  %sresult/   folder'%BASE_DIR)
 
-def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
-    # 0 = all messages are logged (default behavior)
-    # 1 = INFO messages are not printed
-    # 2 = INFO and WARNING messages are not printed
-    # 3 = INFO, WARNING, and ERROR messages are not printed
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
-    print("#### Start program")
-
-    print("Num GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
+def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
     if not os.path.exists('./result'):
         os.makedirs('./result')
 
-    print(image_name)
     path = image_path + 'images/' + image_name + '.jpg'
     image = cv.imread(path, 1)
     mask_path = image_path + 'masks/' + image_name + '.jpg'
@@ -91,11 +101,8 @@ def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     for i in range(hloop):
         for j in range(vloop):
             crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
-            crop_img = np.array([crop_img/255.0])
-            predictions = MODEL.predict(crop_img)
-            predictions = np.squeeze(predictions)
-            predictions = np.where(predictions < 0.7, 0, 1)
-            result[h*j:h*(j+1), w*i:w*(i+1)] = predictions
+            prediction = predict_img(MODEL, crop_img)
+            result[h*j:h*(j+1), w*i:w*(i+1)] = prediction
     result = cv.resize(result,(480,865))
     imwrite('./result/%s_predicted.png'%image_name, result)
               
@@ -105,7 +112,6 @@ def whole_body_test(image_path, image_name, MODEL, h = 64, w = 64):
     a.set_title('Original')
 
     a = fig.add_subplot(1, 3, 2)
-    result = cv.imread('./result/%s_predicted.png'%image_name, 1)
     imgplot = plt.imshow(result)
     a.set_title('Predictions')
 
