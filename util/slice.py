@@ -10,6 +10,7 @@ import os
 import math
 import numpy as np
 import itertools
+from tqdm import tqdm
 
 
 parser = argparse.ArgumentParser(description='''
@@ -22,7 +23,7 @@ parser.add_argument('-width', type=int, default=64,
     help='Width of croped image')
 parser.add_argument('-height', type=int, default=64,
     help='Hight of croped image')
-parser.add_argument('-t', type=bool, default=True,
+parser.add_argument('-t', type=int, default=False,
     help='Crop only images that contain cancer if True')
 parser.add_argument('fName', help='path to input folder from ./')
 
@@ -48,7 +49,7 @@ if not os.path.exists('./%s/sliced/np'%fName):
 
 if (t):
     # # GT images
-    for path in files_GT:
+    for path in tqdm(files_GT, desc='slicing img', leave=False):
         imgName = os.path.basename(path)[0:-4]
         imgPath = os.path.dirname(path)[0:-6] + '/images/'
         img = cv.imread(imgPath+imgName+'.jpg',1)
@@ -69,30 +70,21 @@ if (t):
                     cv.imwrite('./%s/sliced/masks/%s' %(fName,newNameGT), crop_gt)
                     np.save('./%s/sliced/np/%s' %(fName,imgName[14:]+ '_%d_%d'%(i,j)),crop_np)
 else:
-    #image files
-    for imgName in files:
-        img = cv.imread(imgName,1)
+    for path in tqdm(files_GT, desc='slicing img', leave=False):
+        imgName = os.path.basename(path)[0:-4]
+        imgPath = os.path.dirname(path)[0:-6] + '/images/'
+        img = cv.imread(imgPath+imgName+'.jpg',1)
+        img = cv.resize(img,(1024,1024))
+        gt = cv.imread(path,1)
+        gt = cv.resize(gt,(1024,1024))
         for i in range(hloop):
             for j in range(vloop):
+                crop_gt = gt[h*j:h*(j+1), w*i:w*(i+1)]
                 crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
-                newName = os.path.basename(imgName)[:-4] + '_%d_%d'%(i,j)
-                cv.imwrite('./%s/sliced/images/%s.jpg' %(fName,newName), crop_img)
-
-    #GT files
-    for imgName in files_GT:
-        img = cv.imread(imgName,1)
-        for i in range(hloop):
-            for j in range(vloop):
-                crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
-                newName = os.path.basename(imgName)[:-4] + '_%d_%d'%(i,j)
-                cv.imwrite('./%s/sliced/masks/%s.png' %(fName,newName), crop_img)
-
-
-    # NP files
-    for imgName in files_np:
-        img = np.load(imgName)
-        for i in range(hloop):
-            for j in range(vloop):
-                crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
-                newName = os.path.basename(imgName)[:-4] + '_%d_%d'%(i,j)
-                np.save('./%s/sliced/np/%s' %(fName,newName), crop_img)
+                crop_np = np.array(crop_gt)[:, :, 0]
+                crop_np = np.where(crop_np>127, 1, 0)
+                newName = imgName[14:] + '_%d_%d.jpg'%(i,j)
+                newNameGT = imgName[14:] + '_%d_%d.png'%(i,j)
+                cv.imwrite('./%s/sliced/images/%s' %(fName,newName), crop_img)
+                cv.imwrite('./%s/sliced/masks/%s' %(fName,newNameGT), crop_gt)
+                np.save('./%s/sliced/np/%s' %(fName,imgName[14:]+ '_%d_%d'%(i,j)),crop_np)

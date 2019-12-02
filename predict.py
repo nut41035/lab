@@ -8,6 +8,7 @@ import math
 from imageio import imwrite
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
+from tqdm import tqdm
 
 from data import *
 
@@ -25,26 +26,20 @@ def predict_img(MODEL, img):
     # 3 = INFO, WARNING, and ERROR messages are not printed
     os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
     image = np.array([img/255.0])
-
     prediction = MODEL.predict(image)
     prediction = np.squeeze(prediction)
-    prediction = np.where(prediction < 0.7, 0, 1)
+    prediction = np.where(prediction < 0.7, 0, 255)
+    prediction = prediction.astype(np.uint8)
 
     return prediction
 
-def predict_path(MODEL, BASE_DIR, imgName):
-    # 0 = all messages are logged (default behavior)
-    # 1 = INFO messages are not printed
-    # 2 = INFO and WARNING messages are not printed
-    # 3 = INFO, WARNING, and ERROR messages are not printed
-    os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+def predict_path(MODEL, BASE_DIR, imgName): 
     imagePath = BASE_DIR + 'images/' + imgName + '.jpg'
     image = cv.imread(imagePath, 1)
     prediction = predict_img(MODEL, image)
     
     maskPath = BASE_DIR + 'masks/' + imgName + '.npy'
     mask = np.load(maskPath)
-    print("Generated prediction of %s"%imgName)
 
     return image, mask, prediction
 
@@ -58,10 +53,8 @@ def predict_folder(MODEL, BASE_DIR):
 
     TEST_DIR_PATH = BASE_DIR + 'test/'
     files = glob.glob('%s/images/*'%TEST_DIR_PATH)
-
-    for path in files:
+    for path in tqdm(files, desc='images in folder', leave=False):
         imgName = os.path.basename(path)[0:-4]
-        print(imgName)
         image, mask, prediction = predict_path(MODEL, TEST_DIR_PATH, imgName)
         imwrite('%s/result/predicted/%s.png'%(BASE_DIR, imgName), prediction)
 
@@ -80,8 +73,6 @@ def predict_folder(MODEL, BASE_DIR):
 
         plt.savefig('%sresult/combined/%s.png'%(BASE_DIR, imgName))
         plt.close()
-    print('#### FINISHED testing')
-    print('check  %sresult/   folder'%BASE_DIR)
 
 def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
     if not os.path.exists('./result'):
@@ -100,10 +91,12 @@ def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
     result = np.array([[0.0 for x in range(width)] for y in range(height)])
     for i in range(hloop):
         for j in range(vloop):
-            crop_img = img[h*j:h*(j+1), w*i:w*(i+1)]
+            crop_img = img[h*j:h*(j+1), w*i:w*(i+1),:]
             prediction = predict_img(MODEL, crop_img)
             result[h*j:h*(j+1), w*i:w*(i+1)] = prediction
     result = cv.resize(result,(480,865))
+    result = np.where(result < 127, 0, 255)
+    result = result.astype(np.uint8)
     imwrite('./result/%s_predicted.png'%image_name, result)
               
     fig = plt.figure()
@@ -121,5 +114,9 @@ def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
 
     plt.savefig('./result/%s_combined.png'%image_name)
     plt.close()
-    print('#### FINISHED testing')
-    print('check  ./result/  folder')
+
+def predict_folder_whole_body(MODEL, image_path, h = 64, w = 64):
+    files = glob.glob('%s/images/*'%image_path)
+    for path in tqdm(files, desc='predicting WB image', leave=False):
+        imgName = os.path.basename(path)[0:-4]
+        predict_whole_body(MODEL, image_path, imgName, h, w)

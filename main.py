@@ -10,7 +10,7 @@ from model import *
 from data import *
 from predict import *
 import datetime
-
+from notifiers import get_notifier
 
 # 0 = all messages are logged (default behavior)
 # 1 = INFO messages are not printed
@@ -29,7 +29,7 @@ seed = 1
 
 ## training parameter
 EPOCHS = 20
-BS = 15
+BS = 20
 IMAGE_COUNT = 528
 VALIDATION_COUNT = 63
 
@@ -38,11 +38,12 @@ print('#### Successfully obtain TRAINGIN images and masks %d'%(training_data.__l
 validating_data = DataGenerator(VALIDATION_DIR_PATH, batch_size=BS, image_size=64)
 print('#### Successfully obtain VALIDATING images and masks %d'%(validating_data.__len__()))
 
-model = unet()
+model = unet(input_size = (64,64,3))
 print('#### Model loaded')
 # model.summary()
 
-log_dir="logs/fit/" + datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+time_stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
+log_dir="logs/fit/" + time_stamp
 tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram_freq=1)
 file_writer = tf.summary.create_file_writer(log_dir)
 # model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
@@ -52,7 +53,12 @@ model.fit(training_data,
                 validation_data=validating_data,
                 callbacks=[tensorboard_callback])
 
-time_stamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S")
 model.save("model/UNet_%s.h5" %time_stamp)
+print("model saved at   model/UNet_%s.h5"%time_stamp)
 
-test(BASE_DIR = BASE_DIR, MODEL = model)
+predict_folder(model, BASE_DIR)
+predict_whole_body(model, 'data/raw/case1/', 'DWIBS AI CASE 1.0037', 64, 64)
+
+p = get_notifier('slack')
+p.notify(webhook_url='https://hooks.slack.com/services/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', 
+         message='Training complete model    UNet_%s.h5'%time_stamp)

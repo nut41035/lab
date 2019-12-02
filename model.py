@@ -1,6 +1,5 @@
 from tensorflow import keras
 from layers import *
-from loss import *
 
 def unet(pretrained_weights = None,input_size = (64,64,3)):
     inputs = keras.layers.Input(input_size)
@@ -17,7 +16,7 @@ def unet(pretrained_weights = None,input_size = (64,64,3)):
 
     model = keras.models.Model(inputs, outputs)
 
-    model.compile(optimizer = 'adam', loss = jaccard_distance, metrics = ['accuracy'])
+    model.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
     # model.summary()
 
 
