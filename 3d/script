@@ -1,0 +1,6 @@
+#!/bin/bash
+
+python -m main
+python -m main2
+python -m main5
+python -m main6
