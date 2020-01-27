@@ -60,7 +60,7 @@ def predict(MODEL, base_path, img_name, save_to_file=True):
                     elif m_pixel == 0 and p_pixel == 255: #FP
                         img[j,k,:] = blue
                         FP+=1
-            if True:
+            if save:
                 new_name = img_name[:-4] + "__%02d" %(index)
                 # fig = plt.figure()
                 # fig.suptitle(new_name, fontsize=20)
