@@ -1,4 +1,5 @@
 from keras import backend as K
+import tensorflow as tf
 
 
 def jaccard_distance(y_true, y_pred, smooth=100):
@@ -45,3 +46,12 @@ def dice_coef(y_true, y_pred, smooth=1):
 
 def dice_coef_loss(y_true, y_pred):
     return 1-dice_coef(y_true, y_pred)
+
+def tversky_loss(beta):
+  def loss(y_true, y_pred):
+    numerator = tf.reduce_sum(y_true * y_pred, axis=-1)
+    denominator = y_true * y_pred + beta * (1 - y_true) * y_pred + (1 - beta) * y_true * (1 - y_pred)
+
+    return 1 - (numerator + 1) / (tf.reduce_sum(denominator, axis=-1) + 1)
+
+  return loss

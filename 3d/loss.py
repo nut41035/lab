@@ -1,6 +1,16 @@
 from keras import backend as K
 import tensorflow as tf
 
+def recall(y_true, y_pred):
+    numerator = tf.reduce_sum(y_true * y_pred, axis=-1)
+    denominator = K.abs(y_true)
+    return ((numerator+1) / (tf.reduce_sum(denominator, axis=-1)+1))
+
+def precision(y_true, y_pred):
+    numerator = tf.reduce_sum(y_true * y_pred, axis=-1)
+    denominator = K.abs(y_pred)
+    return ((numerator+1) / (tf.reduce_sum(denominator, axis=-1)+1))
+
 
 def jaccard_distance(y_true, y_pred, smooth=100):
     """Jaccard distance for semantic segmentation.

@@ -37,8 +37,8 @@ files = glob.glob('./%simages/*' %fName)
 files_GT = glob.glob('./%smasks/*' %fName)
 files_np = glob.glob('./%snp/*' %fName)
 # how many times it should loop
-hloop = int(math.floor(1024/w)) #Horizontal loop
-vloop = int(math.floor(1024/h)) #Vertical loop
+hloop = int(math.floor(512/w)) #Horizontal loop
+vloop = int(math.floor(896/h)) #Vertical loop
 
 if not os.path.exists('./%s/sliced/images'%fName):
     os.makedirs('./%s/sliced/images'%fName)
@@ -53,9 +53,9 @@ if (t):
         imgName = os.path.basename(path)[0:-4]
         imgPath = os.path.dirname(path)[0:-6] + '/images/'
         img = cv.imread(imgPath+imgName+'.jpg',1)
-        img = cv.resize(img,(1024,1024))
+        img = cv.resize(img,(512,896))
         gt = cv.imread(path,1)
-        gt = cv.resize(gt,(1024,1024))
+        gt = cv.resize(gt,(512,896))
         for i in range(hloop):
             for j in range(vloop):
                 crop_gt = gt[h*j:h*(j+1), w*i:w*(i+1)]
@@ -74,9 +74,9 @@ else:
         imgName = os.path.basename(path)[0:-4]
         imgPath = os.path.dirname(path)[0:-6] + '/images/'
         img = cv.imread(imgPath+imgName+'.jpg',1)
-        img = cv.resize(img,(1024,1024))
+        img = cv.resize(img,(512,896))
         gt = cv.imread(path,1)
-        gt = cv.resize(gt,(1024,1024))
+        gt = cv.resize(gt,(512,896))
         for i in range(hloop):
             for j in range(vloop):
                 crop_gt = gt[h*j:h*(j+1), w*i:w*(i+1)]

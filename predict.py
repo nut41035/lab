@@ -38,8 +38,8 @@ def predict_path(MODEL, BASE_DIR, imgName):
     image = cv.imread(imagePath, 1)
     prediction = predict_img(MODEL, image)
     
-    maskPath = BASE_DIR + 'masks/' + imgName + '.npy'
-    mask = np.load(maskPath)
+    maskPath = BASE_DIR + 'masks/' + imgName + '.png'
+    mask = cv.imread(maskPath, 1)
 
     return image, mask, prediction
 
@@ -83,9 +83,9 @@ def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
     mask_path = image_path + 'masks/' + image_name + '.jpg'
     mask = cv.imread(mask_path, 1)
 
-    img = cv.resize(image,(1024,1024))
-    height = 1024
-    width = 1024
+    # img = cv.resize(image,(1024,1024))
+    height = 865
+    width = 480
     hloop = int(math.ceil(width/w)) #Horizontal loop
     vloop = int(math.ceil(height/h)) #Vertical loop
     result = np.array([[0.0 for x in range(width)] for y in range(height)])
@@ -94,7 +94,7 @@ def predict_whole_body(MODEL, image_path, image_name, h = 64, w = 64):
             crop_img = img[h*j:h*(j+1), w*i:w*(i+1),:]
             prediction = predict_img(MODEL, crop_img)
             result[h*j:h*(j+1), w*i:w*(i+1)] = prediction
-    result = cv.resize(result,(480,865))
+    # result = cv.resize(result,(480,865))
     result = np.where(result < 127, 0, 255)
     result = result.astype(np.uint8)
     imwrite('./result/%s_predicted.png'%image_name, result)

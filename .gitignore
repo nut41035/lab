@@ -12,6 +12,7 @@ try.py
 
 # Compiled source #
 ###################
+*.pyc
 
 # Packages #
 ############

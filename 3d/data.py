@@ -25,11 +25,11 @@ class DataGenerator(keras.utils.Sequence):
         image = np.load(image_path)
         image = np.float32(image)
         mask = np.load(mask_path)
-        mask = np.float32(mask)
+        mask = np.expand_dims(mask, axis=5)
         # mask = cv2.resize(cv2.imread(mask_path, 1),(128,128))
         ## Normalizaing 
-        image = image/255.0
-        mask = mask/255.0
+        image = image
+        mask = mask
         return image, mask
         
     def __getitem__(self, idx):

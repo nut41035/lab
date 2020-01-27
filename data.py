@@ -20,10 +20,11 @@ class DataGenerator(keras.utils.Sequence):
 
     def __load__(self, img):
         image_path = os.path.join(self.path, 'images/', img)
-        mask_path = os.path.join(self.path, 'masks/', img[:-4]) + '.npy'
-        image = cv2.imread(image_path, 1)
-        mask = np.load(mask_path)
-        mask = np.float32(mask)
+        mask_path = os.path.join(self.path, 'masks/', img[:-4]) + '.png'
+        image = cv2.resize(cv2.imread(image_path, 1),(128,128))
+        # mask = np.load(mask_path)
+        # mask = np.float32(mask)
+        mask = cv2.resize(cv2.imread(mask_path, 1),(128,128))
         ## Normalizaing 
         image = image/255.0
         return image, mask

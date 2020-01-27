@@ -43,8 +43,8 @@ seed = 1
 ## training parameter
 EPOCHS = 20
 BS = 16
-IMAGE_COUNT = 4928
-VALIDATION_COUNT = 1480
+IMAGE_COUNT = 1386
+VALIDATION_COUNT =396
 
 training_data = DataGenerator(TRAIN_DIR_PATH, batch_size=BS, image_size=128)
 print('#### Successfully obtain TRAINGIN images and masks %d'%(training_data.__len__()))
@@ -74,4 +74,4 @@ payload = '{"text":"%s"}'%text
 requests.post(url, data=payload)
 
 # predict_folder(model, BASE_DIR)
-# predict_whole_body(model, 'data/raw/case1/', 'DWIBS AI CASE 1.0037', 64, 64)
+# predict_whole_body(model, 'data/raw/case1/', 'DWIBS AI CASE 1.0037', 128, 128)

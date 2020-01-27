@@ -18,7 +18,7 @@ def unet(pretrained_weights = None,input_size = (64,64,3)):
 
     model = keras.models.Model(inputs, outputs)
 
-    model.compile(optimizer = 'adam', loss = dice_coef_loss, metrics = ['accuracy',dice_coef])
+    model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate=0.1), loss = dice_coef_loss, metrics = ['accuracy',dice_coef])
     # model.summary()
 
 

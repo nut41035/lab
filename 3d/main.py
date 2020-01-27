@@ -9,7 +9,7 @@ import cv2 as cv
 from model import *
 from data import *
 from loss import *
-# from predict import *
+from predict import *
 import datetime
 import requests
 from tensorflow.python.client import device_lib
@@ -21,14 +21,10 @@ from tensorflow.compat.v1 import InteractiveSession
 # 2 = INFO and WARNING messages are not printed
 # 3 = INFO, WARNING, and ERROR messages are not printed
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2' 
+
 config = ConfigProto()
 config.gpu_options.allow_growth = True
 session = InteractiveSession(config=config)
-
-## config Slack notification
-url = 'https://hooks.slack.com/services/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'
-headers = {'Content-type': 'application/json',}
-
 
 # os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
 
@@ -46,8 +42,9 @@ EPOCHS = 100
 BS = 16
 IMAGE_COUNT = 470
 VALIDATION_COUNT =134
-learning_rate = 0.1
-loss_func = weighted_dice_loss(0.7)
+learning_rate = 0.005
+loss_func = weighted_dice_loss(0.4)
+# more mean no FP
 input_size = (64,64,32,3)
 
 training_data = DataGenerator(TRAIN_DIR_PATH, batch_size=BS, image_size=64)
@@ -65,7 +62,7 @@ tensorboard_callback = tf.keras.callbacks.TensorBoard(log_dir=log_dir, histogram
 file_writer = tf.summary.create_file_writer(log_dir)
 # model_checkpoint = ModelCheckpoint('unet_membrane.hdf5', monitor='loss',verbose=1, save_best_only=True)
 
-model.fit(training_data, 
+model.fit_generator(training_data, 
                 epochs=EPOCHS,
                 validation_data=validating_data,
                 callbacks=[tensorboard_callback])
@@ -73,13 +70,17 @@ model.fit(training_data,
 model.save("model/UNet_%s.h5" %time_stamp)
 print("model saved at   model/UNet_%s.h5"%time_stamp)
 
-text = 'Training complete model    UNet_%s.h5\r\
-        loss: weighted_dice  0.9\r\
+text = 'UNet_%s.h5\r\
+        loss: weighted_dice  0.4\r\
         learninf rate: %s\r\
-        image size: %s'\
+        image size: %s\r\
+        comment: training on seperate dataset'\
         %(time_stamp,learning_rate,input_size)
-payload = '{"text":"%s"}'%text
-requests.post(url, data=payload)
 
+with open("./log.txt", "a") as myfile:
+    myfile.write(text)
+
+# predict_folder(model, './data/processed/test/')
+InteractiveSession.close(session)
 # predict_folder(model, BASE_DIR)
 # predict_whole_body(model, 'data/raw/case1/', 'DWIBS AI CASE 1.0037', 128, 128)
