@@ -1,7 +1,6 @@
 from tensorflow import keras
 from layers import *
 from loss import *
-# from keras.layers import Conv2D,MaxPooling2D,UpSampling2D,Concatenate,BatchNormalization
 
 def unet(pretrained_weights = None,input_size = (64,64,32,1),l_rate=0.01,loss_func=dice_coef_loss):
     inputs = keras.layers.Input(input_size)
@@ -22,7 +21,6 @@ def unet(pretrained_weights = None,input_size = (64,64,32,1),l_rate=0.01,loss_fu
     model = keras.models.Model(inputs, outputs)
 
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate=l_rate), loss = loss_func, metrics =['accuracy'])
-    # model.summary()
     
     if(pretrained_weights):
     	model.load_weights(pretrained_weights)
@@ -48,7 +46,6 @@ def unet_norm(pretrained_weights = None,input_size = (64,64,32,1),l_rate=0.01,lo
     model = keras.models.Model(inputs, outputs)
 
     model.compile(optimizer = tf.keras.optimizers.Adam(learning_rate=l_rate), loss = loss_func, metrics =['Precision','Recall'])
-    # model.summary()
     
     if(pretrained_weights):
     	model.load_weights(pretrained_weights)
