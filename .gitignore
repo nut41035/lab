@@ -15,6 +15,7 @@ result/
 # fiels
 checkpoint
 try.py
+3d/try*
 
 # file type
 *.ipynb
