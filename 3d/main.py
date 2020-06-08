@@ -22,12 +22,10 @@ def train_and_eval(EPOCHS = 20, BS = 16, IMAGE_COUNT = 139, VALIDATION_COUNT =13
     config = ConfigProto(gpu_options=gpu_options)
     config.gpu_options.allow_growth = True
     session = InteractiveSession(config=config)
-
     print("Number of GPUs Available: ", len(tf.config.experimental.list_physical_devices('GPU')))
-    print(tf.config.experimental.list_physical_devices('GPU'))
 
     ## program parameter
-    BASE_DIR = './data/processed/3-channel-1/'
+    BASE_DIR = './data/processed/3-channel/'
     TRAIN_DIR_PATH = BASE_DIR + 'train/'
     VALIDATION_DIR_PATH = BASE_DIR + 'validation/'
     seed = 1

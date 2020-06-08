@@ -1,10 +1,9 @@
-import tensorflow as tf
 from tensorflow import keras
 
 import numpy as np
 import cv2
 import os
-import sys
+
 class DataGenerator(keras.utils.Sequence):
     # x_set is list of path to the images
     # y_set are the associated classes.
@@ -20,21 +19,16 @@ class DataGenerator(keras.utils.Sequence):
 
     def __load__(self, img):
         image_path = os.path.join(self.path, 'images/', img)
-        mask_path = os.path.join(self.path, 'masks/', img)
-        # image = cv2.resize(cv2.imread(image_path, 1),(128,128))
         image = np.load(image_path)
         image = np.float32(image)
-        # print('shape imag ',image.shape)
-        # image = np.expand_dims(image, axis=4)
+
+        mask_path = os.path.join(self.path, 'masks/', img)
         mask = np.load(mask_path)
-        # print('shape mask 1 ',mask.shape)
         mask = mask.astype(np.float32)
-        # print('shape mask ',mask.shape)
-        # sys.exit()
+
         assert not np.any(np.isnan(mask))
         assert not np.any(np.isnan(image))
-        # mask = np.expand_dims(mask, axis=4)
-        # mask = cv2.resize(cv2.imread(mask_path, 1),(128,128))
+
         ## Normalizaing 
         image = image
         mask = mask
