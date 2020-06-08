@@ -6,9 +6,19 @@ __pycache__/
 util/__pycache__/
 result/
 
+3d/__pycache__/
+3d/logs/
+3d/data/
+3d/model/
+3d/result/
+
 # fiels
 checkpoint
 try.py
+
+# file type
+*.ipynb
+*.txt
 
 # Compiled source #
 ###################
